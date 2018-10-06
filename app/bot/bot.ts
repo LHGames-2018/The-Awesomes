@@ -30,7 +30,7 @@ export class Bot {
         // Determine what action you want to take.
         console.log(this.playerInfo.Position);
 
-        console.log(this.pathFinder.getShortestPath(this.playerInfo, map, this.playerInfo.Position, new Point(9, 39)));
+        console.log(this.pathFinder.getShortestPath(this.playerInfo, map, new Point(10, 10), new Point(12, 12)));
         return ''; // AIHelper.createMoveAction(new Point(0, 1));
     }
 
