@@ -1,12 +1,12 @@
 import { AIHelper } from '../helper/aiHelper';
-import { Player } from '../helper/interfaces';
+import { Player, TileContent } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import { Point } from '../helper/point';
-import { PatheFinder } from '../pathFinding/pahtFinder';
+import { PathFinder } from '../pathFinding/pahtFinder';
 
 export class Bot {
     protected playerInfo: Player;
-    private pathFinder: PatheFinder = new PatheFinder();
+    private pathFinder: PathFinder = new PathFinder();
     /**
      * Gets called before ExecuteTurn. This is where you get your bot's state.
      * @param  {Player} playerInfo Your bot's current state.
@@ -40,5 +40,22 @@ export class Bot {
      */
     public afterTurn(): void {
         console.log('afterTurn');
-     }
+    }
+
+    public getActions(map: Map, path: Point[]): string[] {
+        const actions: string[] = [];
+
+        path.forEach(point => {
+            if (map.getTileAt(point) === TileContent.Wall) {
+                for (let i = 0; i < this.pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); i++) {
+                    actions.push(AIHelper.createAttackAction(point));
+                }
+                actions.push(AIHelper.createAttackAction(point));
+            } else {
+                actions.push(AIHelper.createMoveAction(point));
+            }
+        });
+
+        return [];
+    }
 }

@@ -3,11 +3,10 @@ import { Tile, ResourceTile } from '../Helper/tile';
 import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
-import * as _ from 'underscore';
 import { Node } from './node';
 import { POINT_CONVERSION_COMPRESSED } from 'constants';
 
-export class PatheFinder {
+export class PathFinder {
     // An educated guess of how far it is between two points
     public heuristic(a: Point, b: Point): number {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
@@ -15,13 +14,13 @@ export class PatheFinder {
 
     public nbOfTurns(player: Player, map: Map, a: Node, b: Node): number {
         if (map.getTileAt(b.point) === TileContent.Wall) {
-            return this.nbOfTurnsToKill(5, player.AttackPower);
+            return this.nbOfTurnsToKill(5, player.AttackPower) + 1;
         }
         return this.heuristic(a.point, b.point);
     }
 
     public nbOfTurnsToKill(hp: number, attackPower: number): number {
-        return Math.ceil(hp / attackPower) + 1;
+        return Math.ceil(hp / attackPower);
     }
 
 
@@ -67,7 +66,7 @@ export class PatheFinder {
 
                 while (actualNode.previous) {
                     const previousNode = actualNode.previous;
-                    path.unshift(previousNode.point);
+                    path.unshift(new Point(actualNode.point.x - previousNode.point.x, actualNode.point.y - previousNode.point.y));
                     actualNode = previousNode;
                 }
 
