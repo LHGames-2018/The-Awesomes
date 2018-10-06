@@ -5,6 +5,7 @@ import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import * as _ from 'underscore';
 import { Node } from './node';
+import { POINT_CONVERSION_COMPRESSED } from 'constants';
 
 export class PatheFinder {
 
@@ -69,7 +70,7 @@ export class PatheFinder {
                 }
                 // if we have a tie according to the standard heuristic
                 if (openSet[i].f === openSet[winner].f) {
-                    //Prefer to explore options with longer known paths (closer to goal)
+                    // Prefer to explore options with longer known paths (closer to goal)
                     if (openSet[i].g > openSet[winner].g) {
                         winner = i;
                     }
@@ -91,8 +92,17 @@ export class PatheFinder {
 
             // Did I finish?
             if (Point.Equals(current.point, end)) {
-                console.log('DONE!');
-                return 1;
+                let actualNode = current;
+                const path: Point[] = [];
+                path.push(current.point);
+
+                while (actualNode.previous) {
+                    const previousNode = actualNode.previous;
+                    path.unshift(previousNode.point);
+                    actualNode = previousNode;
+                }
+
+                return path;
             }
 
             // Best option moves from openSet to closedSet
@@ -127,11 +137,9 @@ export class PatheFinder {
                 }
 
             }
-            return 0;
-            // Uh oh, no solution
+            return null;
         } else {
-            console.log('no solution');
-            return -1;
+            return null;
         }
-    };
+    }
 }
