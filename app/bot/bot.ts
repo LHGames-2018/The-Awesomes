@@ -45,16 +45,18 @@ export class Bot {
     public getActions(map: Map, path: Point[]): string[] {
         const actions: string[] = [];
 
-        path.forEach(point => {
-            if (map.getTileAt(point) === TileContent.Wall) {
-                for (let i = 0; i < this.pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); i++) {
-                    actions.push(AIHelper.createAttackAction(point));
+        for (let i = 0; i < path.length; i++) {
+            if (map.getTileAt(path[i]) === TileContent.Wall) {
+                for (let j = 0; j < this.pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); j++) {
+                    actions.push(AIHelper.createAttackAction(path[i]));
                 }
-                actions.push(AIHelper.createAttackAction(point));
+                actions.push(AIHelper.createAttackAction(path[i]));
+            } else if ( i = path.length - 1) {
+                actions.push(AIHelper.createCollectAction(path[i]));
             } else {
-                actions.push(AIHelper.createMoveAction(point));
+                actions.push(AIHelper.createMoveAction(path[i]));
             }
-        });
+        }
 
         return [];
     }
