@@ -5,6 +5,8 @@ import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import { Node } from './node';
 import { POINT_CONVERSION_COMPRESSED } from 'constants';
+import * as Collections from 'typescript-collections';
+
 
 export class PathFinder {
     // An educated guess of how far it is between two points
@@ -45,17 +47,18 @@ export class PathFinder {
     }
 
     public getShortestPath(player: Player, map: Map, start: Point, end: Point) {
-        const openSet: Node[] = [];
+        const openSet: Collections.PriorityQueue<Node> = new Collections.PriorityQueue((a, b) => b.h - a.h);
+
         const startingNode = new Node(start.x, start.y, null, 0, 0, this.heuristic(start, end), Point.distance(start, end));
-        openSet.push(startingNode);
+        openSet.enqueue(startingNode);
 
         const closedSet: Node[] = [];
 
-        while (openSet.length > 0) {
+        while (openSet.size() > 0) {
             console.log('1');
 
             console.log('2');
-            const current = openSet.pop();
+            const current = openSet.dequeue();
 
             if (Point.Equals(current.point, end)) {
                 console.log('8');
@@ -83,14 +86,14 @@ export class PathFinder {
                 const tempG = current.g + this.nbOfTurns(player, map, neighbor, current);
 
                 if ((this.containsObject(closedSet, neighbor) && tempG < neighbor.g) ||
-                    (this.containsObject(openSet, neighbor) && tempG < neighbor.g)) {
+                    (openSet.contains(neighbor) && tempG < neighbor.g)) {
                     continue;
                 } else {
                     console.log('11');
                     neighbor.g = tempG;
                     neighbor.h = neighbor.g + this.heuristic(neighbor.point, end);
                     neighbor.previous = current;
-                    openSet.push(neighbor);
+                    openSet.enqueue(neighbor);
                 }
 
                 closedSet.push(current);
