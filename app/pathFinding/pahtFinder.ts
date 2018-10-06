@@ -3,17 +3,18 @@ import { Tile, ResourceTile } from '../Helper/tile';
 import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
+import * as _ from 'underscore';
 
 
-function AStarPathFinder(importedMap: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
+function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
     const map: Map = importedMap;
-    const lastCheckedNode = start;
+    let lastCheckedNode = start;
     const openSet: Point[] = [];
     // openSet starts with beginning node only
     openSet.push(start);
     // openSet.push(map.tiles[start.x][start.y]);
 
-    const closedSet = [];
+    const closedSet: Point[] = [];
     // const start = start;
     // const end = end;
     // const allowDiagonals = allowDiagonals;
@@ -49,9 +50,9 @@ function AStarPathFinder(importedMap: Map, start: Point, end: Point, allowDiagon
                     winner = i;
                 }
                 //if we have a tie according to the standard heuristic
-                if (this.openSet[i].f == this.openSet[winner].f) {
+                if (openSet[i].f === openSet[winner].f) {
                     //Prefer to explore options with longer known paths (closer to goal)
-                    if (this.openSet[i].g > this.openSet[winner].g) {
+                    if (openSet[i].g > openSet[winner].g) {
                         winner = i;
                     }
                     //if we're using Manhattan distances then also break ties
@@ -61,50 +62,50 @@ function AStarPathFinder(importedMap: Map, start: Point, end: Point, allowDiagon
                     //but improves the look for things like games or more closely
                     //approximates the real shortest path if using grid sampled data for
                     //planning natural paths.
-                    if (!this.allowDiagonals) {
-                        if (this.openSet[i].g == this.openSet[winner].g &&
-                            this.openSet[i].vh < this.openSet[winner].vh) {
+                    if (!allowDiagonals) {
+                        if (openSet[i].g == openSet[winner].g &&
+                            openSet[i].vh < openSet[winner].vh) {
                             winner = i;
                         }
                     }
                 }
             }
-            let current = this.openSet[winner];
-            this.lastCheckedNode = current;
+            const current = openSet[winner];
+            lastCheckedNode = current;
 
             // Did I finish?
-            if (current === this.end) {
+            if (current === end) {
                 console.log("DONE!");
                 return 1;
             }
 
             // Best option moves from openSet to closedSet
-            this.removeFromArray(this.openSet, current);
-            this.closedSet.push(current);
+            removeFromArray(openSet, current);
+            closedSet.push(current);
 
             // Check all the neighbors
-            let neighbors = current.getNeighbors();
+            const neighbors = current.getNeighbors();
 
             for (let i = 0; i < neighbors.length; i++) {
-                let neighbor = neighbors[i];
+                const neighbor = neighbors[i];
 
                 // Valid next spot?
-                if (!this.closedSet.includes(neighbor)) {
+                if (!_.contains(closedSet, neighbor)) {
                     // Is this a better path than before?
-                    let tempG = current.g + this.heuristic(neighbor, current);
+                    let tempG = current.g + heuristic(neighbor, current);
 
                     // Is this a better path than before?
-                    if (!this.openSet.includes(neighbor)) {
-                        this.openSet.push(neighbor);
+                    if (!openSet.includes(neighbor)) {
+                        openSet.push(neighbor);
                     } else if (tempG >= neighbor.g) {
                         // No, it's not a better path
                         continue;
                     }
 
                     neighbor.g = tempG;
-                    neighbor.h = this.heuristic(neighbor, end);
+                    neighbor.h = heuristic(neighbor, end);
                     if (!allowDiagonals) {
-                        neighbor.vh = this.visualDist(neighbor, end);
+                        neighbor.vh = Point.distance(neighbor, end);
                     }
                     neighbor.f = neighbor.g + neighbor.h;
                     neighbor.previous = current;
