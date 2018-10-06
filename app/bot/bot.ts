@@ -26,7 +26,7 @@ export class Bot {
         // Determine what action you want to take.
         console.log(this.playerInfo.Position);
 
-        console.log(this.pathFinder.getShortestPath(this.playerInfo, map, new Point(10, 10), new Point(12, 12)));
+        console.log(this.pathFinder.getShortestPath(this.playerInfo, map, new Point(10, 10), new Point(15, 7)));
         return ''; // AIHelper.createMoveAction(new Point(0, 1));
     }
 
@@ -41,16 +41,23 @@ export class Bot {
     public getActions(map: Map, path: Point[]): string[] {
         const actions: string[] = [];
 
-        for (let i = 0; i < path.length; i++) {
-            if (map.getTileAt(path[i]) === TileContent.Wall) {
+        for (let i = 0; i < path.length - 1; i++) {
+
+            if ( i = path.length - 2) {
+                if (map.getTileAt(path[path.length - 1]) === TileContent.Resource) {
+                    actions.push(AIHelper.createCollectAction(path[i]));
+                } else {
+                    actions.push(AIHelper.createMoveAction(path[path.length - 2]));
+                }
+            } else if (map.getTileAt(path[i]) === TileContent.Wall) {
                 for (let j = 0; j < this.pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); j++) {
                     actions.push(AIHelper.createAttackAction(path[i]));
                 }
-                actions.push(AIHelper.createAttackAction(path[i]));
-            } else if ( i = path.length - 1) {
-                actions.push(AIHelper.createCollectAction(path[i]));
-            } else {
                 actions.push(AIHelper.createMoveAction(path[i]));
+            } else {
+                // if (map.getTileAt(path[i]) === TileContent.Empty) {
+                    actions.push(AIHelper.createMoveAction(path[i]));
+                // }
             }
         }
 

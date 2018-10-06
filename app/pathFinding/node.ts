@@ -18,10 +18,10 @@ export class Node {
 
     public getNeighbors(): Node[] {
         const neighbors: Node[] = [];
-        neighbors.push(new Node(this.point.x + 1, this.point.y + 1,  this));
-        neighbors.push(new Node(this.point.x + 1, this.point.y - 1,  this));
-        neighbors.push(new Node(this.point.x - 1, this.point.y - 1,  this));
-        neighbors.push(new Node(this.point.x - 1, this.point.y + 1,  this));
+        neighbors.push(new Node(this.point.x + 1, this.point.y,  this));
+        neighbors.push(new Node(this.point.x - 1, this.point.y,  this));
+        neighbors.push(new Node(this.point.x, this.point.y - 1,  this));
+        neighbors.push(new Node(this.point.x, this.point.y + 1,  this));
 
         return neighbors;
     }

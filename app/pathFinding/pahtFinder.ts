@@ -48,7 +48,7 @@ export class PathFinder {
         let nextNode = list[0];
         list.forEach(node => {
                 if (node.h < nextNode.h) {
-                    nextNode = node;
+                    nextNode = new Node(node.point.x, node.point.y, node.previous, node.g, node.h);
                 }
             }
         );
@@ -64,12 +64,12 @@ export class PathFinder {
         const closedSet: Node[] = [];
 
         while (openSet.length > 0) {
-            console.log(openSet);
-
             const current = this.bestNode(openSet);
             this.removeFromArray(openSet, current);
 
+
             if (Point.Equals(current.point, end)) {
+                console.log('fin');
                 console.log(current);
 
                 let actualNode = current;
@@ -86,11 +86,9 @@ export class PathFinder {
             }
 
             const neighbors = current.getNeighbors();
-            console.log('9');
 
             for (let i = 0; i < neighbors.length; i++) {
                 const neighbor = neighbors[i];
-                console.log('10');
 
                 const tempG = current.g + this.nbOfTurns(player, map, neighbor, current);
 
@@ -98,7 +96,6 @@ export class PathFinder {
                     (this.containsObject(openSet, neighbor) && tempG < neighbor.g)) {
                     continue;
                 } else {
-                    console.log('11');
                     neighbor.g = tempG;
                     neighbor.h = neighbor.g + this.heuristic(neighbor.point, end);
                     neighbor.previous = current;
@@ -108,7 +105,8 @@ export class PathFinder {
                 closedSet.push(current);
             }
 
-            return null;
         }
+
+        return null;
     }
 }
