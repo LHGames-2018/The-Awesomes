@@ -5,18 +5,14 @@ import { Point } from '../helper/point';
 
 export class Node {
     public point: Point;
-    public f: number;
     public g: number;
     public h: number;
-    public vh: number;
     public previous: Node;
 
-    public constructor(x: number, y: number, previous: Node = null, f: number = 0, g: number = 0, h: number = 0, vh: number = 0) {
+    public constructor(x: number, y: number, previous: Node = null, g: number = 0, h: number = 0) {
         this.point = new Point(x, y);
-        this.f = f;
         this.g = g;
         this.h = h;
-        this.vh = vh;
         this.previous = previous;
     }
 

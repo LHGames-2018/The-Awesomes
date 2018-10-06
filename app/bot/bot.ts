@@ -15,10 +15,6 @@ export class Bot {
     public beforeTurn(playerInfo: Player): void {
         this.playerInfo = playerInfo;
 
-
-
-
-
     }
     /**
      * This is where you decide what action to take.
