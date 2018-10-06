@@ -48,9 +48,11 @@ export class Bot {
         path.forEach(point => {
             if (map.getTileAt(point) === TileContent.Wall) {
                 for (let i = 0; i < this.pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); i++) {
-                    actions.push(AIHelper.createAttackAction(new Point(1, 0)));
+                    actions.push(AIHelper.createAttackAction(point));
                 }
-                actions.push(AIHelper.createAttackAction(new Point(1, 0)));
+                actions.push(AIHelper.createAttackAction(point));
+            } else {
+                actions.push(AIHelper.createMoveAction(point));
             }
         });
 

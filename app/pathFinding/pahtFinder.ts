@@ -108,7 +108,7 @@ export class PathFinder {
 
                 while (actualNode.previous) {
                     const previousNode = actualNode.previous;
-                    path.unshift(previousNode.point);
+                    path.unshift(new Point(actualNode.point.x - previousNode.point.x, actualNode.point.y - previousNode.point.y));
                     actualNode = previousNode;
                 }
 
@@ -155,12 +155,6 @@ export class PathFinder {
             }
 
             return null;
-<<<<<<< HEAD
-        } else {
-            
-            return null;
-=======
->>>>>>> 77c45806e03e1ac4d34bc4ddde654606903ff44f
         }
     }
 }
