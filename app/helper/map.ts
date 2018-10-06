@@ -48,13 +48,13 @@ export class Map {
      * @param  {Point} position The tile's position.
      * @returns TileContent The content of the tile.
      */
-    public getTileAt(position: Point): TileContent {
+    public getTileAt(position: Point): Tile {
         if (position.x < this.xMin || position.x >= this.xMax || position.y < this.yMin || position.y >= this.yMax) {
-            return TileContent.Empty;
+            return new Tile(TileContent.Empty, position.x, position.y);
         }
         const x = position.x - this.xMin;
         const y = position.y - this.yMin;
-        return this.tiles[x][y].TileType;
+        return this.tiles[x][y];
     }
 
     /**
