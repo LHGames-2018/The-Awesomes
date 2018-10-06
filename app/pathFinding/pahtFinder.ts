@@ -4,6 +4,7 @@ import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import * as _ from 'underscore';
+import { Node } from './node';
 
 export class PatheFinder {
 
@@ -15,18 +16,18 @@ export class PatheFinder {
     }
 
     // Function to delete element from the array
-    public removeFromArray(arr: Point[], point: Point) {
+    public removeFromArray(arr: Node[], node: Node) {
         // Could use indexOf here instead to be more efficient
         for (let i = arr.length - 1; i >= 0; i--) {
-            if (Point.Equals(arr[i], point)) {
+            if (Point.Equals(arr[i].point, node.point)) {
                 arr.splice(i, 1);
             }
         }
     }
 
-    public containsObject(list: Point[], obj: Point): boolean {
+    public containsObject(list: Node[], obj: Node): boolean {
         for (let i = 0; i < list.length; i++) {
-            if (list[i] === obj) {
+            if (Point.Equals(list[i].point, obj.point)) {
                 return true;
             }
         }
@@ -39,11 +40,12 @@ export class PatheFinder {
     // returns 1 if goal reached
     // returns -1 if no solution
     public findShortestPath(newMap: Map, start: Point, end: Point) {
-        const openSet: Point[] = [];
-        openSet.push(start);
+        const openSet: Node[] = [];
+        const startingNode = new Node(start.x, start.y, null, 0, 0, this.heuristic(start, end), Point.distance(start, end));
+        openSet.push(startingNode);
 
-        const closedSet: Point[] = [];
-        const lastCheckedNode: Point = start;
+        const closedSet: Node[] = [];
+        let lastCheckedNode: Node = startingNode;
 
         if (openSet.length > 0) {
 
@@ -66,7 +68,7 @@ export class PatheFinder {
                     // but improves the look for things like games or more closely
                     // approximates the real shortest path if using grid sampled data for
                     // planning natural paths.
-                    if (openSet[i].g == openSet[winner].g &&
+                    if (openSet[i].g === openSet[winner].g &&
                         openSet[i].vh < openSet[winner].vh) {
                         winner = i;
                     }
@@ -76,7 +78,7 @@ export class PatheFinder {
             lastCheckedNode = current;
 
             // Did I finish?
-            if (current === end) {
+            if (Point.Equals(current.point, end)) {
                 console.log('DONE!');
                 return 1;
             }
@@ -94,7 +96,7 @@ export class PatheFinder {
                 // Valid next spot?
                 if (!this.containsObject(closedSet, neighbor)) {
                     // Is this a better path than before?
-                    const tempG = current.g + this.heuristic(neighbor, current);
+                    const tempG = current.g + this.heuristic(neighbor.point, current.point);
 
                     // Is this a better path than before?
                     if (!_.contains(openSet, neighbor)) {
@@ -105,8 +107,8 @@ export class PatheFinder {
                     }
 
                     neighbor.g = tempG;
-                    neighbor.h = this.heuristic(neighbor, end);
-                    neighbor.vh = Point.distance(neighbor, end);
+                    neighbor.h = this.heuristic(neighbor.point, end);
+                    neighbor.vh = Point.distance(neighbor.point, end);
 
                     neighbor.f = neighbor.g + neighbor.h;
                     neighbor.previous = current;
