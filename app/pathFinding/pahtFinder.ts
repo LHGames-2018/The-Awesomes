@@ -5,41 +5,45 @@ import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import * as _ from 'underscore';
 
+export class PatheFinder {
 
-function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
-    const map: Map = importedMap;
-    let lastCheckedNode = start;
-    const openSet: Point[] = [];
-    // openSet starts with beginning node only
-    openSet.push(start);
-    // openSet.push(map.tiles[start.x][start.y]);
-
-    const closedSet: Point[] = [];
-    // const start = start;
-    // const end = end;
-    // const allowDiagonals = allowDiagonals;
+    public constructor(private player: Player) {}
 
     // An educated guess of how far it is between two points
-
-    const heuristic = function(a: Point, b: Point) {
+    public heuristic(a: Point, b: Point): number {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-    };
+    }
 
     // Function to delete element from the array
-    const removeFromArray = function(arr: Point[], point: Point) {
+    public removeFromArray(arr: Point[], point: Point) {
         // Could use indexOf here instead to be more efficient
         for (let i = arr.length - 1; i >= 0; i--) {
             if (Point.Equals(arr[i], point)) {
                 arr.splice(i, 1);
             }
         }
-    };
+    }
+
+    public containsObject(list: Point[], obj: Point): boolean {
+        for (let i = 0; i < list.length; i++) {
+            if (list[i] === obj) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     // Run one finding step.
     // returns 0 if search ongoing
     // returns 1 if goal reached
     // returns -1 if no solution
-    const step = function() {
+    public findShortestPath(newMap: Map, start: Point, end: Point) {
+        const openSet: Point[] = [];
+        openSet.push(start);
+
+        const closedSet: Point[] = [];
+        const lastCheckedNode: Point = start;
 
         if (openSet.length > 0) {
 
@@ -49,24 +53,22 @@ function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Po
                 if (openSet[i].f < openSet[winner].f) {
                     winner = i;
                 }
-                //if we have a tie according to the standard heuristic
+                // if we have a tie according to the standard heuristic
                 if (openSet[i].f === openSet[winner].f) {
                     //Prefer to explore options with longer known paths (closer to goal)
                     if (openSet[i].g > openSet[winner].g) {
                         winner = i;
                     }
-                    //if we're using Manhattan distances then also break ties
-                    //of the known distance measure by using the visual heuristic.
-                    //This ensures that the search concentrates on routes that look
-                    //more direct. This makes no difference to the actual path distance
-                    //but improves the look for things like games or more closely
-                    //approximates the real shortest path if using grid sampled data for
-                    //planning natural paths.
-                    if (!allowDiagonals) {
-                        if (openSet[i].g == openSet[winner].g &&
-                            openSet[i].vh < openSet[winner].vh) {
-                            winner = i;
-                        }
+                    // if we're using Manhattan distances then also break ties
+                    // of the known distance measure by using the visual heuristic.
+                    // This ensures that the search concentrates on routes that look
+                    // more direct. This makes no difference to the actual path distance
+                    // but improves the look for things like games or more closely
+                    // approximates the real shortest path if using grid sampled data for
+                    // planning natural paths.
+                    if (openSet[i].g == openSet[winner].g &&
+                        openSet[i].vh < openSet[winner].vh) {
+                        winner = i;
                     }
                 }
             }
@@ -75,12 +77,12 @@ function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Po
 
             // Did I finish?
             if (current === end) {
-                console.log("DONE!");
+                console.log('DONE!');
                 return 1;
             }
 
             // Best option moves from openSet to closedSet
-            removeFromArray(openSet, current);
+            this.removeFromArray(openSet, current);
             closedSet.push(current);
 
             // Check all the neighbors
@@ -90,12 +92,12 @@ function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Po
                 const neighbor = neighbors[i];
 
                 // Valid next spot?
-                if (!_.contains(closedSet, neighbor)) {
+                if (!this.containsObject(closedSet, neighbor)) {
                     // Is this a better path than before?
-                    let tempG = current.g + heuristic(neighbor, current);
+                    const tempG = current.g + this.heuristic(neighbor, current);
 
                     // Is this a better path than before?
-                    if (!openSet.includes(neighbor)) {
+                    if (!_.contains(openSet, neighbor)) {
                         openSet.push(neighbor);
                     } else if (tempG >= neighbor.g) {
                         // No, it's not a better path
@@ -103,10 +105,9 @@ function AStarPathFinder(player: Player, importedMap: Map, start: Point, end: Po
                     }
 
                     neighbor.g = tempG;
-                    neighbor.h = heuristic(neighbor, end);
-                    if (!allowDiagonals) {
-                        neighbor.vh = Point.distance(neighbor, end);
-                    }
+                    neighbor.h = this.heuristic(neighbor, end);
+                    neighbor.vh = Point.distance(neighbor, end);
+
                     neighbor.f = neighbor.g + neighbor.h;
                     neighbor.previous = current;
                 }
