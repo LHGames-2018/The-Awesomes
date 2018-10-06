@@ -4,6 +4,7 @@ export class Point {
     public static distance(pt1: Point, pt2: Point): number {
         return Math.sqrt(Point.distanceSquared(pt1, pt2));
     }
+
     public static distanceSquared(pt1: Point, pt2: Point): number {
         if (pt1 !== undefined && pt2 !== undefined) {
             const xDist = pt1.x - pt2.x;

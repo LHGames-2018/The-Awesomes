@@ -1,16 +1,18 @@
 import { AIHelper } from '../helper/aiHelper';
-import { Player, TileContent } from '../helper/interfaces';
+import { Player, TileContent, PurchasableItem } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import { Point } from '../helper/point';
 import { Tile } from '../helper/tile';
+import { PathFinder } from '../pathFinding/pahtFinder';
 
 export class Bot {
     protected playerInfo: Player;
     private isOccupied = false;
-    private chosenTile: Tile = null;
-    private xMovement = 0;
-    private yMovement = 0;
-
+    private goalPoint: Point = null;
+    private goalType: TileContent = null;
+    private pathFinder: PathFinder = new PathFinder();
+    private path: Point[] = [];
+    private action = 0;
     /**
      * Gets called before ExecuteTurn. This is where you get your bot's state.
      * @param  {Player} playerInfo Your bot's current state.
@@ -31,58 +33,24 @@ export class Bot {
     public executeTurn(map: Map, visiblePlayers: Player[]): string {
         // Determine what action you want to take.
         if (this.playerInfo.CarriedResources === this.playerInfo.CarryingCapacity) {
-            this.chosenTile = map.getTileAt(this.playerInfo.HouseLocation);
-            this.xMovement = this.playerInfo.Position.x - this.playerInfo.HouseLocation.x;
-            this.yMovement = this.playerInfo.Position.y - this.playerInfo.HouseLocation.y;
+            this.goalPoint = this.findHomeClosestPoint(map);
+            this.goalType = TileContent.House;
+            this.path = this.pathFinder.getShortestPath(this.playerInfo, map, this.playerInfo.Position, this.goalPoint);
+            this.action = 0;
             this.isOccupied = true;
-        } else if (this.chosenTile !== null && map.getTileAt(this.chosenTile.Position).TileType !== TileContent.Resource ) {
-            console.log(3);
-            this.isOccupied = false;
         }
         if (!this.isOccupied) {
-            console.log(4);
-            const array = new Array;
-            for (let i = -map.visibleDistance; i < map.visibleDistance; i++) {
-                for (let j = -map.visibleDistance; j < map.visibleDistance; j++) {
-                    const tile: Tile = map.getTileAt(new Point(this.playerInfo.Position.x + i, this.playerInfo.Position.y + j));
-                    if (tile.TileType === TileContent.Resource) {
-                        array.push(tile);
-                    }
-                }
-            }
-            array.sort((tile1: Tile, tile2: Tile) => {
-                return Point.distance(new Point(10, 10), tile1.Position)
-                    - Point.distance(new Point(10, 10), tile2.Position);
-            });
-            this.chosenTile = array[0];
-            this.xMovement = 10 - this.chosenTile.Position.x;
-            this.yMovement = 10 - this.chosenTile.Position.y;
+            console.log('What am i gonna do?');
+            this.goalPoint = this.findClosestRessource(map);
+            console.log('im a go there:');
+            console.log(this.goalPoint);
+            this.goalType = TileContent.Resource;
+            this.path = this.pathFinder.getShortestPath(this.playerInfo, map, this.playerInfo.Position, this.goalPoint);
+            console.log(this.path);
+            this.action = 0;
             this.isOccupied = true;
         }
-        // Player is on the left
-        if (this.xMovement < -1) {
-            this.xMovement++;
-            return AIHelper.createMoveAction(new Point(1, 0));
-        }
-        // Player is on the right
-        if (this.xMovement > 1) {
-            this.xMovement--;
-            return AIHelper.createMoveAction(new Point(-1, 0));
-        }
-        // Player is above
-        if (this.yMovement < 0) {
-            this.yMovement++;
-            return AIHelper.createMoveAction(new Point(0, 1));
-        }
-        // Player is under
-        if (this.yMovement > 0) {
-            this.yMovement++;
-            return AIHelper.createMoveAction(new Point(0, -1));
-        }
-        if (this.chosenTile.TileType === TileContent.House) {
-            return AIHelper.createMoveAction(new Point(this.playerInfo.HouseLocation.x - this.playerInfo.Position.x, 0));
-        }
-        return AIHelper.createCollectAction(new Point(-this.xMovement, this.yMovement));
+        return this.getAction(map);
     }
 
     /**
@@ -95,40 +63,62 @@ export class Bot {
 
     private findClosestRessource(map: Map): Point {
         const array = new Array;
-            for (let i = -map.visibleDistance; i < map.visibleDistance; i++) {
-                for (let j = -map.visibleDistance; j < map.visibleDistance; j++) {
-                    const tile: Tile = map.getTileAt(new Point(this.playerInfo.Position.x + i, this.playerInfo.Position.y + j));
-                    if (tile.TileType === TileContent.Resource) {
-                        array.push(tile);
-                    }
+        for (let i = -map.visibleDistance; i < map.visibleDistance; i++) {
+            for (let j = -map.visibleDistance; j < map.visibleDistance; j++) {
+                const tile: Tile = map.getTileAt(new Point(this.playerInfo.Position.x + i, this.playerInfo.Position.y + j));
+                if (tile.TileType === TileContent.Resource) {
+                    array.push(tile);
                 }
             }
-            array.sort((tile1: Tile, tile2: Tile) => {
-                return Point.distance(new Point(10, 10), tile1.Position)
-                    - Point.distance(new Point(10, 10), tile2.Position);
-            });
-            if (array.length === 0) {
-                throw new Error('No ressources found in the visible area');
-            }
-            return array[0].Position;
+        }
+        array.sort((tile1: Tile, tile2: Tile) => {
+            return Point.distance(new Point(10, 10), tile1.Position)
+                - Point.distance(new Point(10, 10), tile2.Position);
+        });
+        if (array.length === 0) {
+            throw new Error('No ressources found in the visible area');
+        }
+        return new Point(array[0].Position.x + this.playerInfo.Position.x - 10, array[0].Position.y + this.playerInfo.Position.y - 10);
     }
 
     private findHomeClosestPoint(map: Map): Point {
-        const point: Point = new Point(0, 0);
-        point.x = this.playerInfo.HouseLocation.x - this.playerInfo.Position.x + 10;
-        point.y = this.playerInfo.HouseLocation.y - this.playerInfo.Position.y + 10;
-        if (point.x > 20) {
-            point.x = 20;
+        let distX = this.playerInfo.HouseLocation.x - this.playerInfo.Position.x;
+        let distY = this.playerInfo.HouseLocation.y - this.playerInfo.Position.y;
+        if (distX > 10) {
+            distX = 10;
+        } else if (distX < -10) {
+            distX = -10;
         }
-        if (point.x < 0) {
-            point.x = 0;
+        if (distY > 10) {
+            distY = 10;
+        } else if (distY < -10) {
+            distY = -10;
         }
-        if (point.y > 20) {
-            point.y = 20;
+        return new Point(this.playerInfo.Position.x + distX, this.playerInfo.Position.y + distY);
+    }
+
+    public getAction(map: Map): string {
+        const newPosition = this.newPosition(this.playerInfo.Position, this.path[this.action]);
+        if (this.action === this.path.length - 2) {
+            if (map.getTileAt(newPosition).TileType === TileContent.Resource) {
+                return AIHelper.createCollectAction(this.path[this.action]);
+            } else {
+                this.isOccupied = false;
+                return AIHelper.createMoveAction(this.path[this.action]);
+            }
         }
-        if (point.y < 0) {
-            point.x = 0;
+        if (map.getTileAt(newPosition).TileType === TileContent.Wall) {
+            return AIHelper.createAttackAction(this.path[this.action]);
         }
-        return point;
+        if (map.getTileAt(newPosition).TileType === TileContent.Player) {
+            return AIHelper.createAttackAction(this.path[this.action]);
+        }
+        if (map.getTileAt(newPosition).TileType === TileContent.Shop) {
+            return AIHelper.createPurchaseAction(PurchasableItem.Backpack);
+        }
+        return AIHelper.createMoveAction(this.path[this.action++]);
+    }
+    public newPosition(a: Point, b: Point): Point {
+        return new Point(a.x + b.x, a.y + b.y);
     }
 }
