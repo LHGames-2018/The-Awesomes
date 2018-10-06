@@ -15,6 +15,18 @@ export class PatheFinder {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
+    public nbOfTurns(map: Map, a: Node, b: Node): number {
+        if (map.getTileAt(b.point) === TileContent.Wall) {
+            return this.nbOfTurnsToKill(5, this.player.AttackPower);
+        }
+        return this.heuristic(a.point, b.point);
+    }
+
+    public nbOfTurnsToKill(hp: number, attackPower: number): number {
+        return Math.ceil(hp / attackPower) + 1;
+    }
+
+
     // Function to delete element from the array
     public removeFromArray(arr: Node[], node: Node) {
         // Could use indexOf here instead to be more efficient
