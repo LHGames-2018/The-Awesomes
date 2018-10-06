@@ -1,7 +1,8 @@
 import { AIHelper } from '../helper/aiHelper';
-import { Player } from '../helper/interfaces';
+import { Player, TileContent } from '../helper/interfaces';
 import { Map } from '../helper/map';
 import { Point } from '../helper/point';
+import { PatheFinder } from '../pathFinding/pahtFinder';
 
 export class Bot {
     protected playerInfo: Player;
@@ -30,4 +31,19 @@ export class Bot {
      * @returns void
      */
     public afterTurn(): void { }
+
+    public getActions(map: Map, path: Point[]): string[] {
+        const actions: string[] = [];
+
+        path.forEach(point => {
+            if (map.getTileAt(point) === TileContent.Wall) {
+                for (let i = 0; i < pathFinder.nbOfTurnsToKill(5, this.playerInfo.AttackPower); i++) {
+                    actions.push(AIHelper.createAttackAction(new Point(1, 0)));
+                }
+                actions.push(AIHelper.createAttackAction(new Point(1, 0)));
+            }
+        });
+
+        return [];
+    }
 }

@@ -3,7 +3,6 @@ import { Tile, ResourceTile } from '../Helper/tile';
 import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
-import * as _ from 'underscore';
 import { Node } from './node';
 import { POINT_CONVERSION_COMPRESSED } from 'constants';
 
@@ -18,13 +17,13 @@ export class PatheFinder {
 
     public nbOfTurns(map: Map, a: Node, b: Node): number {
         if (map.getTileAt(b.point) === TileContent.Wall) {
-            return this.nbOfTurnsToKill(5, this.player.AttackPower);
+            return this.nbOfTurnsToKill(5, this.player.AttackPower) + 1;
         }
         return this.heuristic(a.point, b.point);
     }
 
     public nbOfTurnsToKill(hp: number, attackPower: number): number {
-        return Math.ceil(hp / attackPower) + 1;
+        return Math.ceil(hp / attackPower);
     }
 
 
@@ -137,8 +136,10 @@ export class PatheFinder {
                 }
 
             }
+
             return null;
         } else {
+            
             return null;
         }
     }
