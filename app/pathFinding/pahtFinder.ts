@@ -1,4 +1,10 @@
-function AStarPathFinder(map, start, end, allowDiagonals) {
+import { TileContent } from '../helper/interfaces';
+import { Tile, ResourceTile } from '../Helper/tile';
+import { Point } from '../helper/point';
+import { Player } from '../helper/interfaces';
+import { Map } from '../helper/map';
+
+function AStarPathFinder(map: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
     this.map = map;
     this.lastCheckedNode = start;
     this.openSet = [];
