@@ -4,61 +4,48 @@ import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
 
-function AStarPathFinder(map: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
-    this.map = map;
-    this.lastCheckedNode = start;
-    this.openSet = [];
+
+function AStarPathFinder(importedMap: Map, start: Point, end: Point, allowDiagonals: boolean = false) {
+    const map: Map = importedMap;
+    const lastCheckedNode = start;
+    const openSet: Point[] = [];
     // openSet starts with beginning node only
-    this.openSet.push(start);
-    this.closedSet = [];
-    this.start = start;
-    this.end = end;
-    this.allowDiagonals = allowDiagonals;
+    openSet.push(start);
+    // openSet.push(map.tiles[start.x][start.y]);
 
-    //This function returns a measure of aesthetic preference for
-    //use when ordering the openSet. It is used to prioritise
-    //between equal standard heuristic scores. It can therefore
-    //be anything you like without affecting the ability to find
-    //a minimum cost path.
-
-    this.visualDist = function(a, b) {
-        return dist(a.i, a.j, b.i, b.j);
-    }
+    const closedSet = [];
+    // const start = start;
+    // const end = end;
+    // const allowDiagonals = allowDiagonals;
 
     // An educated guess of how far it is between two points
 
-    this.heuristic = function(a, b) {
-        var d;
-        if (allowDiagonals) {
-            d = dist(a.i, a.j, b.i, b.j);
-        } else {
-            d = abs(a.i - b.i) + abs(a.j - b.j);
-        }
-        return d;
-    }
+    const heuristic = function(a: Point, b: Point) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    };
 
     // Function to delete element from the array
-    this.removeFromArray = function(arr, elt) {
+    const removeFromArray = function(arr: Point[], point: Point) {
         // Could use indexOf here instead to be more efficient
-        for (var i = arr.length - 1; i >= 0; i--) {
-            if (arr[i] == elt) {
+        for (let i = arr.length - 1; i >= 0; i--) {
+            if (Point.Equals(arr[i], point)) {
                 arr.splice(i, 1);
             }
         }
-    }
+    };
 
-    //Run one finding step.
-    //returns 0 if search ongoing
-    //returns 1 if goal reached
-    //returns -1 if no solution
-    this.step = function() {
+    // Run one finding step.
+    // returns 0 if search ongoing
+    // returns 1 if goal reached
+    // returns -1 if no solution
+    const step = function() {
 
-        if (this.openSet.length > 0) {
+        if (openSet.length > 0) {
 
             // Best next option
-            var winner = 0;
-            for (var i = 1; i < this.openSet.length; i++) {
-                if (this.openSet[i].f < this.openSet[winner].f) {
+            let winner = 0;
+            for (let i = 1; i < openSet.length; i++) {
+                if (openSet[i].f < openSet[winner].f) {
                     winner = i;
                 }
                 //if we have a tie according to the standard heuristic
@@ -82,7 +69,7 @@ function AStarPathFinder(map: Map, start: Point, end: Point, allowDiagonals: boo
                     }
                 }
             }
-            var current = this.openSet[winner];
+            let current = this.openSet[winner];
             this.lastCheckedNode = current;
 
             // Did I finish?
@@ -96,15 +83,15 @@ function AStarPathFinder(map: Map, start: Point, end: Point, allowDiagonals: boo
             this.closedSet.push(current);
 
             // Check all the neighbors
-            var neighbors = current.getNeighbors();
+            let neighbors = current.getNeighbors();
 
-            for (var i = 0; i < neighbors.length; i++) {
-                var neighbor = neighbors[i];
+            for (let i = 0; i < neighbors.length; i++) {
+                let neighbor = neighbors[i];
 
                 // Valid next spot?
                 if (!this.closedSet.includes(neighbor)) {
                     // Is this a better path than before?
-                    var tempG = current.g + this.heuristic(neighbor, current);
+                    let tempG = current.g + this.heuristic(neighbor, current);
 
                     // Is this a better path than before?
                     if (!this.openSet.includes(neighbor)) {
@@ -130,5 +117,5 @@ function AStarPathFinder(map: Map, start: Point, end: Point, allowDiagonals: boo
             console.log('no solution');
             return -1;
         }
-    }
+    };
 }
