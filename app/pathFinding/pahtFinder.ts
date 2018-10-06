@@ -1,5 +1,5 @@
 import { TileContent } from '../helper/interfaces';
-import { Tile, ResourceTile } from '../Helper/tile';
+import { Tile, ResourceTile } from '../helper/tile';
 import { Point } from '../helper/point';
 import { Player } from '../helper/interfaces';
 import { Map } from '../helper/map';
